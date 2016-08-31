@@ -4,7 +4,11 @@ import (
 	"net/rpc"
 	"net"
 	"os"
+	"encoding/csv"
 )
+
+var reader *csv.Reader
+var writer *csv.Writer
 
 type Args struct {
   Name string;
@@ -23,6 +27,10 @@ type Fruit int
 
 func (t *Fruit) AddFruit (args *Args, reply *int) error {
 	fmt.Println("AddFruit: ", args.Name, args.Price)
+	s := []string{args.Name, fmt.Sprintf("%.2f", args.Price)}
+	err := writer.Write(s)
+	writer.Flush()
+    checkError("Cannot write to file", err)
 	return nil
 }
 
@@ -49,6 +57,19 @@ func (t *Fruit) GetPrice (args *Args, reply *int) error {
 
 
 func main () {
+
+	file, err := os.Open("feira.csv")
+	if err != nil {
+		// se nao existir cria
+		file, err = os.Create("feira.csv")
+		checkError("Cannot create file", err)
+	}
+	defer file.Close()
+	reader = csv.NewReader(file)
+	writer = csv.NewWriter(file)
+	reader.Comma = ';'
+	writer.Comma = ';'
+	
 	fruit := new(Fruit)
 	rpc.Register(fruit)
 	tcpAddr, err := net.ResolveTCPAddr("tcp", "localhost:1234")
