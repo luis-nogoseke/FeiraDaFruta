@@ -4,17 +4,35 @@ import (
 	"fmt"
 	"os"
 )
+
 type Args struct {
   Name string;
   Price float64
 }
 
-func readArgs () Args {
+func readFruit () Args {
 	var a string
 	var b float64
-	fmt.Println("A: ")
+	fmt.Printf("Name: ")
 	fmt.Scanln(&a)
-	fmt.Println("B: ")
+	fmt.Printf("Price: ")
+	fmt.Scanln(&b)
+	return Args{a, b}
+}
+
+func readName () Args {
+	var a string
+	fmt.Printf("Name: ")
+	fmt.Scanln(&a)
+	return Args{a, 0}
+}
+
+func readKg () Args {
+	var a string
+	var b float64
+	fmt.Printf("Name: ")
+	fmt.Scanln(&a)
+	fmt.Printf("Kg: ")
 	fmt.Scanln(&b)
 	return Args{a, b}
 }
@@ -31,49 +49,55 @@ func main () {
 	client, err := rpc.Dial("tcp", service)
 	defer client.Close()
 	checkError("Dial: ", err)
-	fmt.Println("1 - AddFruit")
-	fmt.Println("2 - GetPrice")
-	fmt.Println("3 - GetPriceKg")
-	fmt.Println("4 - RemoveFruit")
-	fmt.Println("5 - UpdatePrice")
 	var op byte
-	fmt.Scanf("%c\n", &op)
-	switch op {
-	case '1':
-			args := readArgs()
-			var reply int
-			mulCall := client.Go("Fruit.AddFruit",	args, &reply, nil)
-			replyMul := <- mulCall.Done
-			checkError("Multiply: ", replyMul.Error)
-			// fmt.Printf("%d * %d = %d\n", args.A, args.B, reply)
-			os.Exit(0)
-		case '2':
-			args := readArgs()
-			var reply float64
-			divCall := client.Go("Fruit.GetPrice", args, &reply, nil)
-			replyDiv := <- divCall.Done
-			checkError("Divide: ", replyDiv.Error)
-			fmt.Printf("%.2f\n", reply)
-		case '3':
-			args := readArgs()
-			var reply float64
-			divCall := client.Go("Fruit.GetPriceKg", args, &reply, nil)
-			replyDiv := <- divCall.Done
-			checkError("Divide: ", replyDiv.Error)
-			fmt.Printf("%.2f\n", reply)
-		case '4':
-			args := readArgs()
-			divCall := client.Go("Fruit.RemoveFruit", args, nil, nil)
-			replyDiv := <- divCall.Done
-			checkError("Divide: ", replyDiv.Error)
-		case '5':
-			args := readArgs()
-			var reply int
-			divCall := client.Go("Fruit.UpdatePrice", args, &reply, nil)
-			replyDiv := <- divCall.Done
-			checkError("Divide: ", replyDiv.Error)
-				fmt.Printf("%.2f\n", reply)
-			// fmt.Printf("%d / %d = (%d,%d)\n", args.A, args.B, reply.Q, reply.R)
-			os.Exit(0)
+	for {
+		fmt.Println("\n MENU")
+		fmt.Println("1 - Adicionar Fruta")
+		fmt.Println("2 - Calcular Preço")
+		fmt.Println("3 - Preço por Quilo")
+		fmt.Println("4 - Remover Fruta")
+		fmt.Println("5 - Atualizar Preço")
+		fmt.Println("6 - Sair")
+		fmt.Scanf("%c\n", &op)
+		switch op {
+		case '1':
+				args := readFruit()
+				Call := client.Go("Fruit.AddFruit",	args, nil, nil)
+				replyerr := <- Call.Done
+				checkError("AddFruit: ", replyerr.Error)
+				// fmt.Printf("%d * %d = %d\n", args.A, args.B, reply)
+				break
+			case '2':
+				args := readKg()
+				var reply float64
+				Call := client.Go("Fruit.GetPrice", args, &reply, nil)
+				replyerr := <- Call.Done
+				checkError("GetPrice: ", replyerr.Error)
+				fmt.Printf("R$ %.2f\n", reply)
+				break
+			case '3':
+				args := readName()
+				var reply float64
+				Call := client.Go("Fruit.GetPriceKg", args, &reply, nil)
+				replyerr := <- Call.Done
+				checkError("GetPriceKg: ", replyerr.Error)
+				fmt.Printf("R$ %.2f\n", reply)
+				break
+			case '4':
+				args := readName()
+				Call := client.Go("Fruit.RemoveFruit", args, nil, nil)
+				replyerr := <- Call.Done
+				checkError("Remove: ", replyerr.Error)
+				break
+			case '5':
+				args := readFruit()
+				Call := client.Go("Fruit.UpdatePrice", args, nil, nil)
+				replyerr := <- Call.Done
+				checkError("Update: ", replyerr.Error)
+				break
+			case '6':
+					os.Exit(0)
+		}
 	}
+	os.Exit(0)
 }

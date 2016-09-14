@@ -70,6 +70,7 @@ func (t *Fruit) RemoveFruit (args *Args, reply *int) error {
 	fmt.Println("Remove", args.Name, args.Price)
   printMap(database)
   delete(database, args.Name)
+  UpdateCsv(database)
 	return nil
 }
 
