@@ -44,10 +44,10 @@ func UpdateCsv (m map[string]float64) {
     writer = csv.NewWriter(file)
     writer.Comma = ';'
     for name, price := range m {
-    s := []string{name, fmt.Sprintf("%.2f", price)}
-    err := writer.Write(s)
-    writer.Flush()
-    checkError("Cannot write to file", err)
+        s := []string{name, fmt.Sprintf("%.2f", price)}
+        err := writer.Write(s)
+        writer.Flush()
+        checkError("Cannot write to file", err)
   }
 }
 
@@ -57,12 +57,8 @@ func (t *Fruit) AddFruit (args *Args, reply *int) error {
     if _, ok := database[args.Name]; ok {
         return errors.New("Fruit already registered")
     }
-
-    s := []string{args.Name, fmt.Sprintf("%.2f", args.Price)}
-    err := writer.Write(s)
-    writer.Flush()
-    checkError("Cannot write to file", err)
     database[args.Name] = args.Price
+    UpdateCsv(database)
     return nil
 }
 
@@ -109,11 +105,7 @@ func (t *Fruit) GetPrice (args *Args, reply *float64) error {
 func main () {
     database = map[string]float64{}
     file, err := os.Open("feira.csv")
-    if err != nil {
-        // se nao existir cria
-        file, err = os.Create("feira.csv")
-        checkError("Cannot create file", err)
-    }  else {
+    if err == nil {
         reader = csv.NewReader(file)
         reader.Comma = ';'
         for {
@@ -124,11 +116,8 @@ func main () {
             }
         database[record[0]], _ = strconv.ParseFloat(record[1],64)
         }
+        file.Close()
     }
-
-    defer file.Close()
-    writer = csv.NewWriter(file)
-    writer.Comma = ';'
 
     fruit := new(Fruit)
     rpc.Register(fruit)
