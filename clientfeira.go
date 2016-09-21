@@ -39,7 +39,6 @@ func readKg () Args {
     fmt.Printf("Name: ")
     bytes, _, _ := in.ReadLine()
     a = string(bytes)
-    fmt.Printf("Price: ")
     fmt.Printf("Kg: ")
     fmt.Scanln(&b)
     return Args{a, b}
@@ -48,7 +47,6 @@ func readKg () Args {
 func checkError(st string, err error) {
     if err != nil {
         fmt.Println(st, err)
-        os.Exit(1)
     }
 }
 
